@@ -133,7 +133,7 @@ def spin():
     # Сохраняем выпавший айтем в инвентарь пользователя
     color_rareness = c_row[0] / 100
     back_rareness = b_row[0] / 100
-    if isinstance(random_number, int) == True:
+    if isinstance(random_number, int):
         all_rareness = (c_row[0] * b_row[0]) / 100
     else:
         all_rareness = (c_row[0] * b_row[0]) / 200
@@ -194,9 +194,6 @@ def spin():
 
 @app.route("/signin", methods=['GET', 'POST'])
 def signin():
-    if request.method == 'GET':
-        return render_template("signin.html")
-    
     if request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -240,6 +237,8 @@ def signin():
             print(f"Ошибка при регистрации пользователя: {e}")
             print(f"Детали ошибки: {error_details}")
             return jsonify({'success': False, 'message': 'Ошибка при регистрации'}), 500
+    else:
+        return render_template("signin.html")
 
 
 @app.route("/inventory")
