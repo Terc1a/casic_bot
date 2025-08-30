@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Топы игроков - Casino{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .header h1 {
+        font-size: 3rem;
+        font-weight: 300;
+        color: #ffd700;
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        color: #ccc;
+        font-size: 1.2rem;
+    }
+
+    .tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+        gap: 10px;
+    }
+
+    .tab-btn {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.1);
+        color: #ccc;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .tab-btn:hover {
+        background: rgba(255, 215, 0, 0.2);
+        color: #ffd700;
+    }
+
+    .tab-btn.active {
+        background: rgba(255, 215, 0, 0.3);
+        color: #ffd700;
+        border-color: #ffd700;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .leaderboard {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .leaderboard-header {
+        display: grid;
+        grid-template-columns: 60px 1fr 100px 120px;
+        gap: 15px;
+        padding: 15px 20px;
+        background: rgba(255, 215, 0, 0.1);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #ffd700;
+    }
+
+    .leaderboard-item {
+        display: grid;
+        grid-template-columns: 60px 1fr 100px 120px;
+        gap: 15px;
+        padding: 15px 20px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .leaderboard-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 215, 0, 0.3);
+        transform: translateX(5px);
+    }
+
+    .leaderboard-item.rank-1 {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+        border-color: #ffd700;
+    }
+
+    .leaderboard-item.rank-2 {
+        background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(192, 192, 192, 0.05));
+        border-color: #c0c0c0;
+    }
+
+    .leaderboard-item.rank-3 {
+        background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(205, 127, 50, 0.05));
+        border-color: #cd7f32;
+    }
+
+    .rank {
+        font-size: 1.3rem;
+        font-weight: bold;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .rank-1 .rank {
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .rank-2 .rank {
+        color: #c0c0c0;
+        text-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+    }
+
+    .rank-3 .rank {
+        color: #cd7f32;
+        text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+    }
+
+    .username {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+    .count {
+        text-align: center;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .rarity-badge {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .legendary {
+        background: linear-gradient(135deg, #ff6b6b, #c0392b);
+        color: white;
+    }
+
+    .epic {
+        background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        color: white;
+    }
+
+    .rare {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+    }
+
+    .common {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        color: white;
+    }
+
+    .loading {
+        text-align: center;
+        color: #ccc;
+        font-style: italic;
+        padding: 60px;
+        font-size: 1.2rem;
+    }
+
+    .error {
+        text-align: center;
+        color: #e74c3c;
+        padding: 60px;
+        font-size: 1.1rem;
+    }
+
+    .refresh-btn {
+        padding: 12px 25px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .refresh-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .tabs {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .leaderboard-header,
+        .leaderboard-item {
+            grid-template-columns: 50px 1fr 80px;
+            gap: 10px;
+        }
+        
+        .leaderboard-header :last-child,
+        .leaderboard-item :last-child {
+            display: none;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .leaderboard-header,
+        .leaderboard-item {
+            grid-template-columns: 40px 1fr 60px;
+            padding: 12px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .rank {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>🏆 Топы игроков</h1>
+        <p>Соревнуйтесь за первые места в рейтингах</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="total">📊 По количеству предметов</button>
+        <button class="tab-btn" data-tab="legendary">⭐ По легендарным предметам</button>
+    </div>
+
+    <div class="tab-content active" id="total-tab">
+        <div class="leaderboard">
+            <div class="leaderboard-header">
+                <div>Место</div>
+                <div>Игрок</div>
+                <div>Предметы</div>
+                <div>Редкость</div>
+            </div>
+            <div id="total-leaderboard">
+                <div class="loading">Загрузка рейтинга...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="legendary-tab">
+        <div class="leaderboard">
+            <div class="leaderboard-header">
+                <div>Место</div>
+                <div>Игрок</div>
+                <div>Легендарные</div>
+                <div>Редкость</div>
+            </div>
+            <div id="legendary-leaderboard">
+                <div class="loading">Загрузка рейтинга...</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button class="refresh-btn" onclick="loadLeaderboards()">
+            🔄 Обновить рейтинги
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    class LeaderboardManager {
+        constructor() {
+            this.currentTab = 'total';
+            this.init();
+        }
+        
+        init() {
+            this.bindEvents();
+            this.loadLeaderboards();
+        }
+        
+        bindEvents() {
+            // Обработчики вкладок
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const tab = e.target.dataset.tab;
+                    this.switchTab(tab);
+                });
+            });
+        }
+        
+        switchTab(tab) {
+            // Переключение активной вкладки
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            this.currentTab = tab;
+        }
+        
+        async loadLeaderboards() {
+            try {
+                // Загрузка обоих рейтингов одновременно
+                const [totalData, legendaryData] = await Promise.all([
+                    this.fetchLeaderboard('total'),
+                    this.fetchLeaderboard('legendary')
+                ]);
+                
+                this.displayLeaderboard('total', totalData);
+                this.displayLeaderboard('legendary', legendaryData);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки рейтингов:', error);
+                this.showError('total', 'Ошибка загрузки рейтинга');
+                this.showError('legendary', 'Ошибка загрузки рейтинга');
+            }
+        }
+        
+        async fetchLeaderboard(type) {
+            const response = await fetch(`/leaderboard/${type}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        }
+        
+        displayLeaderboard(type, data) {
+            const container = document.getElementById(`${type}-leaderboard`);
+            
+            if (!data.players || data.players.length === 0) {
+                container.innerHTML = '<div class="loading">Нет данных для отображения</div>';
+                return;
+            }
+            
+            container.innerHTML = data.players.map((player, index) => `
+                <div class="leaderboard-item rank-${index < 3 ? index + 1 : ''}">
+                    <div class="rank">${index + 1}</div>
+                    <div class="username">${player.user_name}</div>
+                    <div class="count">${type === 'total' ? player.total_items : player.legendary_items}</div>
+                    <div class="rarity-badge ${this.getRarityClass(player.avg_rarity)}">
+                        ${this.getRarityName(player.avg_rarity)}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        showError(type, message) {
+            const container = document.getElementById(`${type}-leaderboard`);
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+        
+        getRarityClass(rarity) {
+            if (rarity >= 0.8) return 'legendary';
+            if (rarity >= 0.6) return 'epic';
+            if (rarity >= 0.4) return 'rare';
+            return 'common';
+        }
+        
+        getRarityName(rarity) {
+            if (rarity >= 0.8) return 'Легендарный';
+            if (rarity >= 0.6) return 'Эпический';
+            if (rarity >= 0.4) return 'Редкий';
+            return 'Обычный';
+        }
+    }
+
+    // Глобальная функция для кнопки обновления
+    function loadLeaderboards() {
+        const manager = new LeaderboardManager();
+    }
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        new LeaderboardManager();
+    });
+</script>
+{% endblock %}

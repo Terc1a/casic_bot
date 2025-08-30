@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+
+{% block title %}Рулетка - Casino{% endblock %}
+
+{% block styles %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+    .bg-casino-dark {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    }
+
+    .bg-casino-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+    }
+
+    .border-gold {
+        border-color: #ffd700;
+    }
+
+    .text-gold {
+        color: #ffd700;
+    }
+
+    .glow-gold {
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .number-item {
+        min-width: 80px;
+        height: 100px;
+        margin: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        border: 2px solid transparent;
+    }
+
+    .roulette-track {
+        height: 120px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .center-indicator {
+        background: linear-gradient(to bottom, transparent, #ffd700, transparent);
+        box-shadow: 0 0 20px #ffd700;
+    }
+
+    .pointer {
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-top: 20px solid #ffd700;
+    }
+
+    .spin-btn {
+        background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        transition: all 0.3s ease;
+    }
+
+    .spin-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(197, 48, 48, 0.6);
+    }
+
+    .item-card {
+        aspect-ratio: 1;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .item-card:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Редкости */
+    .rarity-common {
+        border: 3px solid #a0aec0;
+    }
+
+    .rarity-uncommon {
+        border: 3px solid #48bb78;
+    }
+
+    .rarity-rare {
+        border: 3px solid #4299e1;
+    }
+
+    .rarity-epic {
+        border: 3px solid #9f7aea;
+    }
+
+    .rarity-legendary {
+        border: 3px solid #ed8936;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-casino-dark text-white">
+    <!-- Header -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gold glow-gold mb-4">
+                🎰 Игровая Рулетка
+            </h1>
+            <p class="text-xl text-gray-300">Испытайте удачу и вращайте колесо!</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <!-- Roulette -->
+            <div class="bg-casino-card rounded-2xl p-6 border border-gold/30">
+                <div class="roulette-track rounded-xl relative overflow-hidden mb-6">
+                    <div class="roulette flex absolute top-0 left-0 h-full" id="roulette"></div>
+                    <div
+                        class="center-indicator absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-full">
+                    </div>
+                    <div class="pointer absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                </div>
+
+                <div class="text-center">
+                    <button id="spinButton" class="spin-btn px-12 py-4 text-white font-bold rounded-full text-lg">
+                        🎯 Крутить рулетку
+                    </button>
+                </div>
+
+                <div id="errorMessage" class="hidden bg-red-600 text-white p-4 rounded-lg mt-6 text-center"></div>
+            </div>
+
+            <!-- Results -->
+            <div class="bg-casino-card rounded-2xl p-6 border border-gold/30">
+                <h3 class="text-2xl font-bold text-gold text-center mb-6">Результат</h3>
+
+                <div id="resultNumber" class="text-6xl font-bold text-center py-6 bg-gray-800 rounded-xl mb-6">
+                    -
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg">
+                        <span class="text-gray-300">Число:</span>
+                        <span id="statNumber" class="font-bold text-lg">-</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg">
+                        <span class="text-gray-300">Цвет текста:</span>
+                        <span id="statColor" class="font-bold text-lg">-</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg">
+                        <span class="text-gray-300">Фон:</span>
+                        <span id="statBack" class="font-bold text-lg">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory -->
+        <div class="bg-casino-card rounded-2xl p-6 border border-gold/30">
+            <h2 class="text-3xl font-bold text-gold text-center mb-8">🎒 Ваш инвентарь</h2>
+
+            <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="text-center text-gray-400 py-8">Загрузка инвентаря...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="itemModal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 border border-gold/30">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gold" id="modalTitle">Детали предмета</h3>
+            <button id="closeModal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+
+        <div id="itemDetails" class="text-center">
+            <!-- Details will be inserted here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    class CasinoRoulette {
+        constructor() {
+            this.roulette = document.getElementById('roulette');
+            this.spinButton = document.getElementById('spinButton');
+            this.errorMessage = document.getElementById('errorMessage');
+            this.resultNumber = document.getElementById('resultNumber');
+            this.statNumber = document.getElementById('statNumber');
+            this.statColor = document.getElementById('statColor');
+            this.statBack = document.getElementById('statBack');
+            this.inventoryGrid = document.getElementById('inventoryGrid');
+            this.itemModal = document.getElementById('itemModal');
+            this.itemDetails = document.getElementById('itemDetails');
+            this.closeModal = document.getElementById('closeModal');
+            this.modalTitle = document.getElementById('modalTitle');
+
+            this.numbers = 50;
+            this.currentPosition = 0;
+            this.isSpinning = false;
+            this.spinAnimation = null;
+
+            this.colors = {
+                1: { code: 8421504, name: 'Тёмно-бордовый' },
+                2: { code: 16747520, name: 'Тёмно-оранжевый' },
+                3: { code: 16766720, name: 'Золотистый' },
+                4: { code: 34816, name: 'Изумрудный' },
+                5: { code: 52479, name: 'Лазурный' },
+                6: { code: 255, name: 'Сапфировый' },
+                7: { code: 8388736, name: 'Фиолетовый' },
+                8: { code: 13369548, name: 'Малиновый' },
+                9: { code: 16761035, name: 'Нежно-розовый' },
+                10: { code: 16777184, name: 'Светло-бежевый' }
+            };
+
+            this.backs = {
+                1: { code: 3158064, name: 'Тёмно-серый' },
+                2: { code: 9127187, name: 'Коричневый' },
+                3: { code: 16053492, name: 'Песочный' },
+                4: { code: 8421376, name: 'Оливковый' },
+                5: { code: 65518, name: 'Морской волны' },
+                6: { code: 128, name: 'Тёмно-синий' },
+                7: { code: 6684774, name: 'Сливовый' },
+                8: { code: 10040064, name: 'Тёмно-пурпурный' },
+                9: { code: 16767673, name: 'Персиковый' },
+                10: { code: 12632256, name: 'Светло-серый' }
+            };
+
+            this.init();
+        }
+
+        init() {
+            this.generateRouletteNumbers();
+            this.bindEvents();
+            this.hideError();
+            this.loadInventory();
+        }
+
+        rgbToHex(rgb) {
+            return '#' + rgb.toString(16).padStart(6, '0');
+        }
+
+        generateRouletteNumbers() {
+            this.roulette.innerHTML = '';
+
+            for (let i = 1; i <= this.numbers; i++) {
+                const numberElement = document.createElement('div');
+                numberElement.className = 'number-item';
+                numberElement.textContent = i;
+                numberElement.id = `number-${i}`;
+
+                const randomColorId = Math.floor(Math.random() * 10) + 1;
+                const randomBackId = Math.floor(Math.random() * 10) + 1;
+
+                numberElement.style.color = this.rgbToHex(this.colors[randomColorId].code);
+                numberElement.style.backgroundColor = this.rgbToHex(this.backs[randomBackId].code);
+
+                this.roulette.appendChild(numberElement);
+            }
+        }
+
+        bindEvents() {
+            this.spinButton.addEventListener('click', () => this.handleSpin());
+            this.closeModal.addEventListener('click', () => this.hideModal());
+            this.itemModal.addEventListener('click', (e) => {
+                if (e.target === this.itemModal) this.hideModal();
+            });
+        }
+
+        async handleSpin() {
+            if (this.isSpinning) return;
+
+            this.isSpinning = true;
+            this.spinButton.disabled = true;
+            this.hideError();
+            this.clearResults();
+
+            this.startSpinning();
+
+            try {
+                const response = await fetch('/spin');
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                this.stopSpinning(data.number, data.color, data.back);
+                setTimeout(() => this.loadInventory(), 3500);
+
+            } catch (error) {
+                this.handleError(error.message);
+            }
+        }
+
+        startSpinning() {
+            let speed = 30;
+            const animate = () => {
+                speed = Math.min(speed * 1.02, 100);
+                this.currentPosition -= speed;
+                this.roulette.style.transform = `translateX(${this.currentPosition}px)`;
+
+                if (this.currentPosition < -this.roulette.scrollWidth / 2) {
+                    this.currentPosition += this.roulette.scrollWidth / 2;
+                }
+
+                this.spinAnimation = requestAnimationFrame(animate);
+            };
+
+            this.spinAnimation = requestAnimationFrame(animate);
+        }
+
+        stopSpinning(winningNumber, colorId, backId) {
+            cancelAnimationFrame(this.spinAnimation);
+
+            const numberElement = document.getElementById(`number-${winningNumber}`);
+            const targetPosition = -((winningNumber - 1) * 100) + 200;
+
+            numberElement.style.color = this.rgbToHex(this.colors[colorId]?.code);
+            numberElement.style.backgroundColor = this.rgbToHex(this.backs[backId]?.code);
+
+            this.roulette.style.transition = 'transform 3s cubic-bezier(0.33, 0, 0.67, 1)';
+            this.roulette.style.transform = `translateX(${targetPosition}px)`;
+
+            setTimeout(() => {
+                this.showResults(winningNumber, colorId, backId);
+                this.isSpinning = false;
+                this.spinButton.disabled = false;
+            }, 3000);
+        }
+
+        showResults(number, colorId, backId) {
+            const colorName = this.colors[colorId]?.name || 'Неизвестно';
+            const backName = this.backs[backId]?.name || 'Неизвестно';
+
+            this.resultNumber.textContent = number;
+            this.resultNumber.style.color = this.rgbToHex(this.colors[colorId]?.code);
+            this.resultNumber.style.backgroundColor = this.rgbToHex(this.backs[backId]?.code);
+
+            this.statNumber.textContent = number;
+            this.statColor.textContent = colorName;
+            this.statBack.textContent = backName;
+        }
+
+        clearResults() {
+            this.resultNumber.textContent = '-';
+            this.statNumber.textContent = '-';
+            this.statColor.textContent = '-';
+            this.statBack.textContent = '-';
+        }
+
+        async loadInventory() {
+            try {
+                const response = await fetch('/inventory');
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    this.displayInventory(data.items);
+                } else {
+                    this.inventoryGrid.innerHTML = '<div class="text-center text-gray-400 py-8">Инвентарь пуст</div>';
+                }
+            } catch (error) {
+                this.inventoryGrid.innerHTML = '<div class="text-center text-red-400 py-8">Ошибка загрузки</div>';
+            }
+        }
+
+        displayInventory(items) {
+            this.inventoryGrid.innerHTML = items.map(item => {
+                const rarityClass = this.getRarityClass(item.all_rareness);
+                const itemNumber = item.number || '?';
+
+                return `
+                    <div class="item-card ${rarityClass}" 
+                         style="color: ${this.rgbToHex(item.color_code)}; 
+                                background: ${this.rgbToHex(item.back_code)};"
+                         onclick="casinoRoulette.showItemDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                        <span class="text-2xl font-bold">${itemNumber}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        showItemDetails(item) {
+            const itemNumber = item.number || '?';
+
+            this.itemDetails.innerHTML = `
+        <div class="text-5xl font-bold mb-4" 
+             style="color: ${this.rgbToHex(item.color_code)}; 
+                    background: ${this.rgbToHex(item.back_code)};
+                    padding: 1rem; border-radius: 12px;">
+            ${itemNumber}
+        </div>
+        
+        <div class="text-left mb-4">
+            <div class="mb-2"><span class="text-gray-400">Цвет:</span> <span class="font-bold">${item.color_name}</span></div>
+            <div class="mb-2"><span class="text-gray-400">Фон:</span> <span class="font-bold">${item.back_name}</span></div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-gray-700 p-3 rounded">
+                <div class="text-gray-400 text-sm">Редкость цвета</div>
+                <div class="font-bold text-yellow-400">${(item.color_rareness * 100).toFixed(2)}%</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded">
+                <div class="text-gray-400 text-sm">Редкость фона</div>
+                <div class="font-bold text-yellow-400">${(item.back_rareness * 100).toFixed(2)}%</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded col-span-2">
+                <div class="text-gray-400 text-sm">Общая редкость</div>
+                <div class="font-bold text-yellow-400">${(item.all_rareness * 100).toFixed(2)}%</div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-700 p-3 rounded">
+            <div class="text-gray-400 text-sm">Уровень редкости</div>
+            <div class="font-bold text-${this.getRarityColor(item.all_rareness)}">${this.getRarityLevel(item.all_rareness)}</div>
+        </div>
+    `;
+
+            this.modalTitle.textContent = `Предмет #${item.item_id}`;
+            this.showModal();
+        }
+
+        getRarityColor(rarity) {
+            if (rarity >= 0.8) return 'orange-500';
+            if (rarity >= 0.6) return 'purple-500';
+            if (rarity >= 0.4) return 'blue-500';
+            if (rarity >= 0.2) return 'green-500';
+            return 'gray-400';
+        }
+
+        showModal() {
+            this.itemModal.classList.remove('hidden');
+            this.itemModal.classList.add('flex');
+        }
+
+        hideModal() {
+            this.itemModal.classList.add('hidden');
+            this.itemModal.classList.remove('flex');
+        }
+
+        getRarityClass(rarity) {
+            if (rarity >= 0.8) return 'rarity-legendary';
+            if (rarity >= 0.6) return 'rarity-epic';
+            if (rarity >= 0.4) return 'rarity-rare';
+            if (rarity >= 0.2) return 'rarity-uncommon';
+            return 'rarity-common';
+        }
+
+        getRarityLevel(rarity) {
+            if (rarity >= 0.8) return 'Легендарный';
+            if (rarity >= 0.6) return 'Эпический';
+            if (rarity >= 0.4) return 'Редкий';
+            if (rarity >= 0.2) return 'Необычный';
+            return 'Обычный';
+        }
+
+        handleError(message) {
+            this.stopAnimation();
+            this.errorMessage.textContent = message;
+            this.errorMessage.classList.remove('hidden');
+            this.isSpinning = false;
+            this.spinButton.disabled = false;
+        }
+
+        hideError() {
+            this.errorMessage.classList.add('hidden');
+        }
+
+        stopAnimation() {
+            if (this.spinAnimation) {
+                cancelAnimationFrame(this.spinAnimation);
+            }
+        }
+    }
+
+    let casinoRoulette;
+    document.addEventListener('DOMContentLoaded', () => {
+        casinoRoulette = new CasinoRoulette();
+    });
+</script>
+{% endblock %}

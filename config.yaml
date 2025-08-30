@@ -1,0 +1,6 @@
+host_db: 192.168.0.100
+user: casino
+password: Bestplay1-
+database: casino
+charset: utf8mb4
+SECRET_KEY: D49H38*&(j84ew4u3w98--457ft
