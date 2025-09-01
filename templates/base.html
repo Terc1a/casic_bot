@@ -3,18 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Casino App{% endblock %}</title>
+    <meta name="description" content="Современное онлайн казино с уникальной системой коллекционирования">
+    <meta name="theme-color" content="#0f172a">
+    <title>{% block title %}Casino Royal{% endblock %}</title>
+    <!-- Шрифты -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Стили -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     {% block styles %}{% endblock %}
 </head>
 <body>
     {% include 'components/navbar.html' %}
-    
+
     <main class="main-content">
         {% block content %}
         {% endblock %}
     </main>
-    
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="logo-text">🎰 Casino Royal</span>
+                    <p class="footer-tagline">Испытайте свою удачу и соберите коллекцию</p>
+                </div>
+                <div class="footer-links">
+                    <a href="{{ url_for('index') }}" class="footer-link">Главная</a>
+                    <a href="{{ url_for('leadboard') }}" class="footer-link">Рейтинги</a>
+                    <a href="{{ url_for('login') }}" class="footer-link">Аккаунт</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Casino Royal. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Контейнер для уведомлений -->
+    <div class="toast-container"></div>
+
+    <!-- Скрипты -->
+    <script src="{{ url_for('static', filename='js/casino.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

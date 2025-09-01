@@ -3,242 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            padding: 20px;
-            text-align: center;
-            color: white;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        .form-container {
-            padding: 20px 30px 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus {
-            border-color: #6a11cb;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.2);
-        }
-        
-        .error-message {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-        
-        .switch-form {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .switch-form a {
-            color: #6a11cb;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .switch-form a:hover {
-            text-decoration: underline;
-        }
-        
-        .success-message {
-            background-color: #2ecc71;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-            display: none;
-        }
-    </style>
+    <title>Регистрация | Casino Royal</title>
+    <meta name="description" content="Зарегистрируйтесь в Casino Royal и начните собирать свою коллекцию уникальных предметов">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Регистрация</h1>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo">🎰</div>
+            <h1 class="auth-title">Создайте аккаунт</h1>
+            <p class="auth-subtitle">Присоединяйтесь к нашему сообществу игроков</p>
         </div>
-        
-        <div class="form-container">
-            <div class="success-message" id="successMessage">
-                Регистрация прошла успешно!
+
+        <div class="auth-body">
+            <div class="alert alert-success" id="successMessage">
+                Регистрация прошла успешно! Переходим на страницу входа...
             </div>
-            
+
+            <div class="alert alert-error" id="generalError"></div>
+
             <form id="signinForm">
                 <div class="form-group">
-                    <label for="username">Имя пользователя</label>
-                    <input type="text" id="username" name="username" required>
-                    <div class="error-message" id="usernameError"></div>
+                    <label for="username" class="form-label">Имя пользователя</label>
+                    <input type="text" id="username" name="username" class="form-control" required autocomplete="username">
+                    <div class="form-error" id="usernameError"></div>
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="password">Пароль</label>
-                    <input type="password" id="password" name="password" required>
-                    <div class="error-message" id="passwordError"></div>
+                    <label for="password" class="form-label">Пароль</label>
+                    <input type="password" id="password" name="password" class="form-control" required autocomplete="new-password">
+                    <div class="form-error" id="passwordError"></div>
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="confirmPassword">Подтверждение пароля</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" required>
-                    <div class="error-message" id="confirmPasswordError"></div>
+                    <label for="confirmPassword" class="form-label">Подтверждение пароля</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required autocomplete="new-password">
+                    <div class="form-error" id="confirmPasswordError"></div>
                 </div>
-                
-                <button type="submit" class="submit-btn">Зарегистрироваться</button>
+
+                <button type="submit" class="auth-btn">Создать аккаунт</button>
+
+                <div class="auth-divider">
+                    <span>или</span>
+                </div>
+
+                <div class="auth-footer">
+                    Уже есть аккаунт? <a href="{{ url_for('login') }}" class="auth-link">Войти</a>
+                </div>
             </form>
-            
-            <div class="switch-form">
-                Уже есть аккаунт? <a href="login.html">Войти</a>
-            </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('signinForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Сбрасываем сообщения об ошибках
-            document.querySelectorAll('.error-message').forEach(el => {
-                el.style.display = 'none';
-            });
-            
-            // Получаем значения полей
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            let isValid = true;
-            
-            // Валидация имени пользователя
-            if (username.length < 3) {
-                document.getElementById('usernameError').textContent = 'Имя пользователя должно содержать не менее 3 символов';
-                document.getElementById('usernameError').style.display = 'block';
-                isValid = false;
-            }
-            
-            // Валидация пароля
-            if (password.length < 6) {
-                document.getElementById('passwordError').textContent = 'Пароль должен содержать не менее 6 символов';
-                document.getElementById('passwordError').style.display = 'block';
-                isValid = false;
-            }
-            
-            // Проверка совпадения паролей
-            if (password !== confirmPassword) {
-                document.getElementById('confirmPasswordError').textContent = 'Пароли не совпадают';
-                document.getElementById('confirmPasswordError').style.display = 'block';
-                isValid = false;
-            }
-            
-            if (isValid) {
-                // Отправка данных на сервер
-                fetch('/signin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Показываем сообщение об успехе
-                        document.getElementById('successMessage').style.display = 'block';
-                        
-                        // Очищаем форму
-                        document.getElementById('signinForm').reset();
-                        
-                        // Перенаправляем на страницу входа через 2 секунды
-                        setTimeout(() => {
-                            window.location.href = '/login';
-                        }, 2000);
-                    } else {
-                        alert('Ошибка регистрации: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Произошла ошибка при регистрации');
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('signinForm');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const successMessage = document.getElementById('successMessage');
+            const generalError = document.getElementById('generalError');
+
+            // Очистка ошибок при фокусе на поле
+            const inputs = [usernameInput, passwordInput, confirmPasswordInput];
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    const errorElement = document.getElementById(input.id + 'Error');
+                    if (errorElement) errorElement.style.display = 'none';
+                    generalError.style.display = 'none';
                 });
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Сбрасываем сообщения об ошибках
+                document.querySelectorAll('.form-error').forEach(el => {
+                    el.style.display = 'none';
+                });
+                generalError.style.display = 'none';
+
+                // Получаем значения полей
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+
+                let isValid = true;
+
+                // Валидация имени пользователя
+                if (username.length < 3) {
+                    showError('usernameError', 'Имя пользователя должно содержать не менее 3 символов');
+                    isValid = false;
+                } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    showError('usernameError', 'Имя пользователя может содержать только буквы, цифры и подчеркивания');
+                    isValid = false;
+                }
+
+                // Валидация пароля
+                if (password.length < 6) {
+                    showError('passwordError', 'Пароль должен содержать не менее 6 символов');
+                    isValid = false;
+                }
+
+                // Проверка совпадения паролей
+                if (password !== confirmPassword) {
+                    showError('confirmPasswordError', 'Пароли не совпадают');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    // Блокируем кнопку отправки
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Регистрация...';
+
+                    // Отправка данных на сервер
+                    fetch('/signin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Показываем сообщение об успехе
+                            successMessage.style.display = 'block';
+                            form.reset();
+
+                            // Перенаправляем на страницу входа через 2 секунды
+                            setTimeout(() => {
+                                window.location.href = '/login';
+                            }, 2000);
+                        } else {
+                            // Разблокируем кнопку
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Создать аккаунт';
+
+                            // Показываем сообщение об ошибке
+                            generalError.textContent = data.message || 'Ошибка при регистрации';
+                            generalError.style.display = 'block';
+                            generalError.classList.add('shake');
+                            setTimeout(() => {
+                                generalError.classList.remove('shake');
+                            }, 600);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+
+                        // Разблокируем кнопку
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Создать аккаунт';
+
+                        // Показываем сообщение об ошибке
+                        generalError.textContent = 'Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.';
+                        generalError.style.display = 'block';
+                    });
+                }
+            });
+
+            function showError(elementId, message) {
+                const errorElement = document.getElementById(elementId);
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+
+                // Добавляем анимацию встряски
+                const inputElement = document.getElementById(elementId.replace('Error', ''));
+                inputElement.classList.add('shake');
+                setTimeout(() => {
+                    inputElement.classList.remove('shake');
+                }, 600);
             }
         });
     </script>
