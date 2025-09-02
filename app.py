@@ -37,7 +37,7 @@ class User(UserMixin):
         return str(self.id)
 
 
-def create_user_inventory(username):
+async def create_user_inventory(username):
     try:
         cnx = connect(user=conf['user'], password=conf['password'],
                       host=conf['host_db'], database=conf['database'])
@@ -67,7 +67,7 @@ def create_user_inventory(username):
 
 
 @contextmanager
-def get_cursor():
+async def get_cursor():
     conn = pool.get_connection()
     cur = conn.cursor(buffered=True)
     try:
@@ -82,7 +82,7 @@ def get_cursor():
 
 
 @login_manager.user_loader
-def load_user(user_id):
+async def load_user(user_id):
     cnx = connect(user=conf['user'], password=conf['password'], host=conf['host_db'], database=conf['database'])
     cursor = cnx.cursor(buffered=True)
     select_user = f"""SELECT * FROM users WHERE user_id={user_id}"""
@@ -99,7 +99,7 @@ def index():
 
 @app.route("/spin")
 @login_required
-def spin():
+async def spin():
     random_number = random.randint(1, 50)
     random_color = random.randint(1, 10)
     random_back = random.randint(1, 10)
@@ -196,7 +196,7 @@ def spin():
 
 
 @app.route("/signin", methods=['GET', 'POST'])
-def signin():
+async def signin():
     if request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -243,7 +243,7 @@ def signin():
 
 @app.route("/inventory")
 @login_required
-def inventory():
+async def inventory():
     try:
         cnx = connect(user=conf['user'], password=conf['password'],
                       host=conf['host_db'], database=conf['database'])
@@ -301,7 +301,7 @@ def inventory():
 
 
 @app.route("/login", methods=['GET', 'POST'])
-def login():
+async def login():
     if request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -351,7 +351,7 @@ def login():
 
 
 @app.route("/leaderboard/total")
-def leaderboard_total():
+async def leaderboard_total():
     try:
         cnx = connect(user=conf['user'], password=conf['password'],
                       host=conf['host_db'], database=conf['database'])
@@ -383,7 +383,7 @@ def leaderboard_total():
 
 
 @app.route("/leaderboard/legendary")
-def leaderboard_legendary():
+async def leaderboard_legendary():
     try:
         cnx = connect(user=conf['user'], password=conf['password'],
                       host=conf['host_db'], database=conf['database'])
@@ -416,13 +416,13 @@ def leaderboard_legendary():
 
 
 @app.route("/leaderboard")
-def leadboard():
+async def leadboard():
     return render_template("top.html")
 
 
 @app.route("/logout")
 @login_required
-def logout():
+async def logout():
     session.pop('username', None)
     logout_user()
     return redirect(url_for('login'))
