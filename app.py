@@ -6,26 +6,28 @@ import yaml
 from werkzeug.security import generate_password_hash, check_password_hash
 from contextlib import contextmanager
 import traceback
+import threading
 
 with open("config.yaml", "r") as f:
     conf = yaml.safe_load(f)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = conf['SECRET_KEY']
+app.config['THREADED'] = True  # Включаем многопоточность
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# Увеличиваем размер пула соединений
 pool = pooling.MySQLConnectionPool(
     pool_name="mypool",
-    pool_size=10,
+    pool_size=20,  # Увеличиваем размер пула
     user=conf['user'],
     password=conf['password'],
     host=conf['host_db'],
     database=conf['database']
 )
-
 
 class User(UserMixin):
     def __init__(self, id, username, password):
@@ -36,14 +38,12 @@ class User(UserMixin):
     def get_id(self):
         return str(self.id)
 
-
-async def create_user_inventory(username):
+def create_user_inventory(username):
     try:
         cnx = connect(user=conf['user'], password=conf['password'],
                       host=conf['host_db'], database=conf['database'])
         cursor = cnx.cursor()
 
-        # Создаем таблицу инвентаря для пользователя
         create_table = f"""
             CREATE TABLE IF NOT EXISTS inventory_{username} (
                 user_id BIGINT NOT NULL,
@@ -65,9 +65,8 @@ async def create_user_inventory(username):
         if 'cnx' in locals() and cnx.is_connected():
             cnx.close()
 
-
 @contextmanager
-async def get_cursor():
+def get_cursor():
     conn = pool.get_connection()
     cur = conn.cursor(buffered=True)
     try:
@@ -80,16 +79,18 @@ async def get_cursor():
         cur.close()
         conn.close()
 
-
 @login_manager.user_loader
-async def load_user(user_id):
-    cnx = connect(user=conf['user'], password=conf['password'], host=conf['host_db'], database=conf['database'])
-    cursor = cnx.cursor(buffered=True)
-    select_user = f"""SELECT * FROM users WHERE user_id={user_id}"""
-    cursor.execute(select_user)
-    user_data = cursor.fetchall()
-    return User(user_data[0][0], user_data[0][1], user_data[0][1])
-
+def load_user(user_id):
+    try:
+        with get_cursor() as (cursor, conn):
+            select_user = "SELECT * FROM users WHERE user_id = %s"
+            cursor.execute(select_user, (user_id,))
+            user_data = cursor.fetchall()
+            if user_data:
+                return User(user_data[0][0], user_data[0][1], user_data[0][2])
+    except Exception as e:
+        print(f"Error loading user: {str(e)}")
+    return None
 
 @app.route("/")
 @login_required
@@ -99,7 +100,7 @@ def index():
 
 @app.route("/spin")
 @login_required
-async def spin():
+def spin():
     random_number = random.randint(1, 50)
     random_color = random.randint(1, 10)
     random_back = random.randint(1, 10)
@@ -196,7 +197,7 @@ async def spin():
 
 
 @app.route("/signin", methods=['GET', 'POST'])
-async def signin():
+def signin():
     if request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -243,7 +244,7 @@ async def signin():
 
 @app.route("/inventory")
 @login_required
-async def inventory():
+def inventory():
     try:
         cnx = connect(user=conf['user'], password=conf['password'],
                       host=conf['host_db'], database=conf['database'])
@@ -301,7 +302,7 @@ async def inventory():
 
 
 @app.route("/login", methods=['GET', 'POST'])
-async def login():
+def login():
     if request.method == 'POST':
         data = request.get_json()
         if not data:
@@ -351,13 +352,12 @@ async def login():
 
 
 @app.route("/leaderboard/total")
-async def leaderboard_total():
+def leaderboard_total():
+    # Убери async и добавь обработку через пул соединений
     try:
-        cnx = connect(user=conf['user'], password=conf['password'],
-                      host=conf['host_db'], database=conf['database'])
-        cursor = cnx.cursor(buffered=True, dictionary=True)
-
-        query = """
+        with get_cursor() as (cursor, conn):
+            cursor = conn.cursor(buffered=True, dictionary=True)
+            query = """
                 SELECT u.user_name,
                        COUNT(i.item_id)    as total_items,
                        AVG(i.all_rareness) as avg_rarity
@@ -365,64 +365,46 @@ async def leaderboard_total():
                          JOIN items i ON u.user_id = i.u_id
                 GROUP BY u.user_id, u.user_name
                 ORDER BY total_items DESC, avg_rarity DESC
-                LIMIT 20 \
-                """
-        cursor.execute(query)
-        players = cursor.fetchall()
-
-        return jsonify({'players': players})
-
+                LIMIT 20
+            """
+            cursor.execute(query)
+            players = cursor.fetchall()
+            return jsonify({'players': players})
     except Exception as e:
         print(f"Error loading total leaderboard: {str(e)}")
         return jsonify({'error': 'Failed to load leaderboard'}), 500
-    finally:
-        if 'cursor' in locals():
-            cursor.close()
-        if 'cnx' in locals() and cnx.is_connected():
-            cnx.close()
-
 
 @app.route("/leaderboard/legendary")
-async def leaderboard_legendary():
+def leaderboard_legendary():
+    # Аналогично leaderboard_total
     try:
-        cnx = connect(user=conf['user'], password=conf['password'],
-                      host=conf['host_db'], database=conf['database'])
-        cursor = cnx.cursor(buffered=True, dictionary=True)
-
-        query = """
+        with get_cursor() as (cursor, conn):
+            cursor = conn.cursor(buffered=True, dictionary=True)
+            query = """
                 SELECT u.user_name,
                        COUNT(i.item_id)    as legendary_items,
                        AVG(i.all_rareness) as avg_rarity
                 FROM users u
                          JOIN items i ON u.user_id = i.u_id
-                WHERE i.all_rareness >= 0.8 -- Легендарные предметы
+                WHERE i.all_rareness >= 0.8
                 GROUP BY u.user_id, u.user_name
                 ORDER BY legendary_items DESC, avg_rarity DESC
-                LIMIT 20 \
-                """
-        cursor.execute(query)
-        players = cursor.fetchall()
-
-        return jsonify({'players': players})
-
+                LIMIT 20
+            """
+            cursor.execute(query)
+            players = cursor.fetchall()
+            return jsonify({'players': players})
     except Exception as e:
         print(f"Error loading legendary leaderboard: {str(e)}")
         return jsonify({'error': 'Failed to load leaderboard'}), 500
-    finally:
-        if 'cursor' in locals():
-            cursor.close()
-        if 'cnx' in locals() and cnx.is_connected():
-            cnx.close()
-
 
 @app.route("/leaderboard")
-async def leadboard():
+def leadboard():
     return render_template("top.html")
-
 
 @app.route("/logout")
 @login_required
-async def logout():
+def logout():
     session.pop('username', None)
     logout_user()
     return redirect(url_for('login'))
