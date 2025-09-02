@@ -3,156 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход | Casino Royal</title>
-    <meta name="description" content="Войдите в свой аккаунт Casino Royal, чтобы продолжить коллекционирование уникальных предметов">
-    <meta name="theme-color" content="#0f172a">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <title>Авторизация</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .form-container {
+            padding: 20px 30px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #6a11cb;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.2);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .switch-form a {
+            color: #6a11cb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error-container {
+            background-color: #ffecec;
+            color: #e74c3c;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-header">
-            <div class="auth-logo">🎰</div>
-            <h1 class="auth-title">Добро пожаловать</h1>
-            <p class="auth-subtitle">Войдите в свой аккаунт, чтобы продолжить</p>
+    <div class="container">
+        <div class="header">
+            <h1>Авторизация</h1>
         </div>
 
-        <div class="auth-body">
-            <div class="alert alert-error" id="errorMessage"></div>
+        <div class="form-container">
+            <div class="error-container" id="errorMessage"></div>
 
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="username" class="form-label">Имя пользователя</label>
-                    <input type="text" id="username" name="username" class="form-control" required autocomplete="username">
-                    <div class="form-error" id="usernameError"></div>
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" name="username" required>
+                    <div class="error-message" id="usernameError"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="password" class="form-label">Пароль</label>
-                    <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password">
-                    <div class="form-error" id="passwordError"></div>
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                    <div class="error-message" id="passwordError"></div>
                 </div>
 
-                <button type="submit" class="auth-btn">Войти</button>
-
-                <div class="auth-divider">
-                    <span>или</span>
-                </div>
-
-                <div class="auth-footer">
-                    Нет аккаунта? <a href="{{ url_for('signin') }}" class="auth-link">Создать аккаунт</a>
-                </div>
+                <button type="submit" class="submit-btn">Войти</button>
             </form>
+
+            <div class="switch-form">
+                Нет аккаунта? <a href="signin.html">Зарегистрироваться</a>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('loginForm');
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
-            const errorMessage = document.getElementById('errorMessage');
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-            // Очистка ошибок при фокусе на поле
-            const inputs = [usernameInput, passwordInput];
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    const errorElement = document.getElementById(input.id + 'Error');
-                    if (errorElement) errorElement.style.display = 'none';
-                    errorMessage.style.display = 'none';
-                });
+            // Сбрасываем сообщения об ошибках
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
             });
+            document.getElementById('errorMessage').style.display = 'none';
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
+            // Получаем значения полей
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
 
-                // Сбрасываем сообщения об ошибках
-                document.querySelectorAll('.form-error').forEach(el => {
-                    el.style.display = 'none';
-                });
-                errorMessage.style.display = 'none';
+            let isValid = true;
 
-                // Получаем значения полей
-                const username = usernameInput.value.trim();
-                const password = passwordInput.value;
+            // Валидация имени пользователя
+            if (username.length === 0) {
+                document.getElementById('usernameError').textContent = 'Введите имя пользователя';
+                document.getElementById('usernameError').style.display = 'block';
+                isValid = false;
+            }
 
-                let isValid = true;
+            // Валидация пароля
+            if (password.length === 0) {
+                document.getElementById('passwordError').textContent = 'Введите пароль';
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            }
 
-                // Валидация имени пользователя
-                if (username.length === 0) {
-                    showError('usernameError', 'Введите имя пользователя');
-                    isValid = false;
-                }
-
-                // Валидация пароля
-                if (password.length === 0) {
-                    showError('passwordError', 'Введите пароль');
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    // Блокируем кнопку отправки
-                    const submitButton = form.querySelector('button[type="submit"]');
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'Входим...';
-
-                    // Отправка данных на сервер
-                    fetch('/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            username: username,
-                            password: password
-                        })
+            if (isValid) {
+                // Отправка данных на сервер
+                fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Перенаправляем на указанную страницу
-                            window.location.href = data.redirect || '/';
-                        } else {
-                            // Разблокируем кнопку
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Войти';
-
-                            // Показываем сообщение об ошибке
-                            errorMessage.textContent = data.message || 'Неверное имя пользователя или пароль';
-                            errorMessage.style.display = 'block';
-                            errorMessage.classList.add('shake');
-                            setTimeout(() => {
-                                errorMessage.classList.remove('shake');
-                            }, 600);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Ошибка:', error);
-
-                        // Разблокируем кнопку
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Войти';
-
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Перенаправляем на главную страницу или другую защищенную страницу
+                        window.location.href = data.redirect || '/';
+                    } else {
                         // Показываем сообщение об ошибке
-                        errorMessage.textContent = 'Произошла ошибка при авторизации. Пожалуйста, попробуйте позже.';
-                        errorMessage.style.display = 'block';
-                    });
-                }
-            });
-
-            function showError(elementId, message) {
-                const errorElement = document.getElementById(elementId);
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-
-                // Добавляем анимацию встряски
-                const inputElement = document.getElementById(elementId.replace('Error', ''));
-                inputElement.classList.add('shake');
-                setTimeout(() => {
-                    inputElement.classList.remove('shake');
-                }, 600);
+                        document.getElementById('errorMessage').textContent = data.message || 'Неверное имя пользователя или пароль';
+                        document.getElementById('errorMessage').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    document.getElementById('errorMessage').textContent = 'Произошла ошибка при авторизации';
+                    document.getElementById('errorMessage').style.display = 'block';
+                });
             }
         });
     </script>
